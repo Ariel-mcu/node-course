@@ -1,5 +1,5 @@
 // 回傳 1 + 2 + ... + n 的結果 
-// for 迴圈 ( n 較小執行時間越快，反之)
+// O(1) for 迴圈 ( n 較小執行時間越快，反之)
 function sum(n) {
     let sum =0;
     for (let i =0; i <= n; i ++){
@@ -23,7 +23,7 @@ for(let i =0; i < 1000; i++){
 
 console.timeEnd('SUM1');
 
-// 公式解 ( n 較大的話，效能較高，反之)
+// O(1) 公式解 ( n 較大的話，效能較高，反之)
 function sum2(n) {
     return ((n + 1) * n) / 2;
     // (上底 + 下底) * 高 / 2
@@ -47,3 +47,13 @@ console.timeEnd('SUM2');
 function sum3(n){
     [1,2,3,...n].reduce((sum, item) => sum + item, 0);
 }
+
+// recursive 版本 : 一直呼叫自己，直到結束
+function sum4(n){
+    if (n === 1) {
+        return n;
+    }
+    return sum4(n - 1) + n;
+}
+
+console.log(sum4(10));
