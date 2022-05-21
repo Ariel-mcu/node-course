@@ -17,8 +17,9 @@ const fs = require('fs/promises'); // -> 使用 promise 版本
                 stockNo: stockNo,
             },
         });
-            console.log(response.data);
-            } catch (e) {
-                console.error(e);
-            }
+        console.log(response.data);
+        } catch (e) {
+            console.error(e);
+        }
+
 })();
