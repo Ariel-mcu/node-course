@@ -24,7 +24,6 @@ fs.readFile('stock.txt','utf-8',(err,stockNO) => {
             } catch (e)  {
                 console.error(e);
             }
-        })
-        main();
+        })()
     }
 });
