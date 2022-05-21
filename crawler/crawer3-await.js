@@ -16,9 +16,9 @@ const fs = require('fs/promises'); // -> 使用 promise 版本
                 date: '20220301',
                 stockNo: stockNo,
             },
-            });
+        });
             console.log(response.data);
-        } catch (e) {
-            console.error(e);
-        }
+            } catch (e) {
+                console.error(e);
+            }
 })();
