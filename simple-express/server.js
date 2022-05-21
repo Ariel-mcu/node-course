@@ -11,7 +11,7 @@ app.get('/', (request, response, next) => {
 
 app.get('/about', (request, response, next) => {
     response.send("About me");
-})
+});
 
 
 app.listen(3001, () =>{
