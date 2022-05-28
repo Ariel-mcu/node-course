@@ -4,7 +4,12 @@
 const express = require('express');
 // 利用 epxress 來建立一個 express application
 const app = express();
+
 const path = require('path');
+
+// 使用第三方套件 cors
+const cors = require('cors');
+app.use(cors());
 
 const mysql = require('mysql2');
 require('dotenv').config();
@@ -106,6 +111,7 @@ app.get('/ssr', (req, res, next) => {
 
 // 取得 stocks 的列表
 app.get('/stocks', async (req, res, next) => {
+  console.log('我是股票列表');
   let [data, fields] = await pool.execute('SELECT * FROM stocks');
   res.json(data);
 });

@@ -36,6 +36,7 @@ const moment = require('moment');
       database: process.env.DB_NAME,
     });
 
+    // eslint-disable-next-line no-unused-vars
     let [data, fields] = await connection.execute('SELECT * FROM stocks');
 
     /************* fetch stock prices by stock list from db ************************** */
