@@ -8,11 +8,11 @@ import { useState, useEffect } from 'react';
 // 就會去幫我們重新渲染畫面、執行「副作用」
 const StockDetails = () => {
   // 宣告一個由 react 控制的狀態，這個狀態名字叫做 data
-  const [data, setData] = useState([]);
+  let [data, setData] = useState([]);
   // 目前在第幾頁
-  const [page, setPage] = useState(1);
+  let [page, setPage] = useState(1);
   // 總筆數 1,2,3,4,5,6,...,12
-  const [lastPage, setLastPage] = useState(1);
+  let [lastPage, setLastPage] = useState(1);
 
   //data = ['a','b','c'] <-- 不行直接改！！！
   // 當 useEffect 的第二個參數是空陣列的時候
@@ -20,26 +20,41 @@ const StockDetails = () => {
   useEffect(() => {
     let getPrices = async () => {
       // http://localhost:3001/stocks/2330?page=1
+      // 5.await 重新取得 page=8 的資料
       let response = await axios.get('http://localhost:3001/stocks/2330', {
         params: {
           page: page,
         },
       });
+      // 6.setData() --> 會引發畫面重新畫跟 data 有關的地方
       setData(response.data.data);
       // 在 react 裡，不可以直接去設定 state 變數
       // 這樣 react 會不知道這個狀態被改變
       // lastPage = response.data.pagination.lastPage;
       // 一定要透過 setXXXX 去設定狀態才可以
+      // 7.setLastPage() --> 會引發畫面重新畫跟 lastPage 有關的地方 (頁碼那邊)
       setLastPage(response.data.pagination.lastPage);
+      // setXXX 是一個非同步函式
+      console.log('just after setLastPage', lastPage);
     };
     getPrices();
-  }, []);
+    // 4.等到外包公司做完(page 已經是 8)，通知 react
+    // react 開始檢查 page 這個變數有沒有副作用要做 -> 有!!! 就是 useEffect
+  }, [page]);
+  // 初始化的時候，page 會從沒有定義變成預設值 -> 會引發這個副作用
+  // 點擊頁碼，會透過 onClick 去設定 page setPage(i) -> 會引發副作用
+  // (副作用都是在改變完成後才觸發)
+
+  useEffect(() => {
+    console.log('useEffect for lastPage', lastPage);
+  }, [lastPage]);
 
   const getPages = () => {
     let pages = [];
     for (let i = 1; i <= lastPage; i++) {
       // page 是我們現在在第幾頁
       pages.push(
+        // 1. 游標點擊<li>
         <li
           style={{
             display: 'inline-block',
@@ -54,6 +69,13 @@ const StockDetails = () => {
             textAlign: 'center',
           }}
           key={i}
+          // onClick 是 JS 事件，數字被點擊換顏色
+          // 2.會觸發 <li> onClick 事件
+          onClick={(e) => {
+            // 管理好 page 的狀態
+            // 3.setPage(8) => 非同步，假設點擊頁碼為8( 外包公司 )
+            setPage(i);
+          }}
         >
           {i}
         </li>
