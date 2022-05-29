@@ -127,7 +127,7 @@ app.get('/stocks', async (req, res, next) => {
 app.get('/stocks/:stockId', async (req, res, next) => {
   // 取得網址上的參數 req.params
   // req.params.stockId
-  console.log('get stocks by id', req.params);
+  console.log('get stocks by id', req.params.stockId);
 
   // RESTful 風格之下，鼓勵把這種過濾參數用 query string 來傳遞
   // /stocks/:stockId?page=1
