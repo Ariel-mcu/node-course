@@ -1,4 +1,3 @@
-// npm i express// 導入 express 這個模組const express = require('express');// 利用 epxress 來建立一個 express applicationconst app = express();
 // npm i express
 // 導入 express 這個模組
 const express = require('express');
@@ -7,13 +6,15 @@ const app = express();
 
 const path = require('path');
 
-// 使用第三方套件 cors
+// 使用第三方開發的中間件 cors
 const cors = require('cors');
 app.use(cors());
 
 const mysql = require('mysql2');
 require('dotenv').config();
-
+// 這裡不會像爬蟲那樣，只建立一個連線 (mysql.createConnection)
+// 但是，也不會幫每一個 request 都分別建立連線
+// ----> connection pool
 let pool = mysql
   .createPool({
     host: process.env.DB_HOST,
@@ -21,8 +22,9 @@ let pool = mysql
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-
+    // 為了 pool 新增的參數
     connectionLimit: 10,
+    dateStrings: true,
   })
   .promise();
 
@@ -46,6 +48,10 @@ app.set('views', path.join(__dirname, 'views'));
 // 設定 express要用哪一種樣版引擎 (template engine)
 // npm i pug
 app.set('view engine', 'pug');
+
+// extended: false --> querystring
+// extended: true --> qs
+// app.use(express.urlencoded({ extended: true }));
 
 // express 處理靜態資料
 // 靜態資料: html, css 檔案, javascript 檔案, 圖片, 影音檔...
@@ -109,6 +115,7 @@ app.get('/ssr', (req, res, next) => {
   });
 });
 
+// RESTful API
 // 取得 stocks 的列表
 app.get('/stocks', async (req, res, next) => {
   console.log('我是股票列表');
@@ -121,21 +128,51 @@ app.get('/stocks/:stockId', async (req, res, next) => {
   // 取得網址上的參數 req.params
   // req.params.stockId
   console.log('get stocks by id', req.params);
-  let [data, fields] = await pool.execute('SELECT * FROM stocks WHERE id = ' + req.params.stockId);
 
-  console.log('query stocks by id', data);
-  // 空資料(查不到資料)有兩種處理方式:
-  // 1. 200 ok 就回 []
-  // 2. 回復 404
+  // RESTful 風格之下，鼓勵把這種過濾參數用 query string 來傳遞
+  // /stocks/:stockId?page=1
+  // 1. 取得目前在第幾頁，而且利用 || 這個特性來做預設值
+  // req.query = {}
+  // 如果網址上沒有 page 這個 query string，那 req.query.page 會是 undefined
+  // undefined 會是 false，所以 page 就被設定成 || 後面那個數字
+  // https://developer.mozilla.org/zh-CN/docs/Glossary/Falsy
+  let page = req.query.page || 1;
+  console.log('current page', page);
 
-  if (data.length === 0) {
-    // 404 範例
-    res.status(404).json(data);
-  } else {
-    res.json(data);
-  }
+  // 2. 取得目前的總筆數
+  let [allResults, fields] = await pool.execute('SELECT * FROM stock_prices WHERE stock_id = ?', [req.params.stockId]);
+  const total = allResults.length;
+  console.log('total:', total);
 
-  res.json(data);
+  // 3. 計算總共有幾頁
+  // Math.ceil 1.1 => 2   1.05 -> 2
+  const perPage = 5; // 每一頁有幾筆
+  const lastPage = Math.ceil(total / perPage);
+  console.log('lastPage:', lastPage);
+
+  // 4. 計算 offset 是多少（計算要跳過幾筆）
+  // 在第五頁，就是要跳過 4 * perPage
+  let offset = (page - 1) * perPage;
+  console.log('offset:', offset);
+
+  // 5. 取得這一頁的資料 select * from table limit ? offet ?
+  let [pageResults] = await pool.execute('SELECT * FROM stock_prices WHERE stock_id = ? ORDER BY date DESC LIMIT ? OFFSET ?', [req.params.stockId, perPage, offset]);
+
+  // test case:
+
+  // 正面: 沒有page, page=1, page=2, page=12 (因為總共12頁)
+  // 負面: page=-1, page=13, page=空白(page=1), page=a,...
+  // 6. 回覆給前端
+  res.json({
+    // 用來儲存所有跟頁碼有關的資訊
+    pagination: {
+      total,
+      lastPage,
+      page,
+    },
+    // 真正的資料
+    data: pageResults,
+  });
 });
 
 // 這個中間件在所有路由的後面
