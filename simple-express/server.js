@@ -50,9 +50,12 @@ app.set('views', path.join(__dirname, 'views'));
 // npm i pug
 app.set('view engine', 'pug');
 
+// express.urlencoded 要讓 express 認得 body 裡面的資料
 // extended: false --> querystring
 // extended: true --> qs
-// app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({ extended: true }));
+// 要讓 express 認得 req 裡的 json
+app.use(express.json());
 
 // express 處理靜態資料
 // 靜態資料: html, css 檔案, javascript 檔案, 圖片, 影音檔...
@@ -118,6 +121,9 @@ app.get('/ssr', (req, res, next) => {
 
 const StockRouter = require('./routers/stockRouters');
 app.use('/api/stocks', StockRouter);
+
+const AuthRouter = require('./routers/authRouters');
+app.use('/api/stocks', AuthRouter);
 
 // 這個中間件在所有路由的後面
 // 會到這裡，表示前面所有的路由中間件都沒有比到符合的網址

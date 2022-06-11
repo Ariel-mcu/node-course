@@ -7,6 +7,14 @@ const router = express.Router();
 
 const pool = require('../utils/db');
 
+router.use((req, res, next) => {
+  console.log('CCCCCCC');
+  next();
+});
+
+router.get('/', singleMiddleLeware, async(req, res, next) => {
+
+}); 
 // RESTful API
 // 取得 stocks 的列表
 router.get('/', async (req, res, next) => {
