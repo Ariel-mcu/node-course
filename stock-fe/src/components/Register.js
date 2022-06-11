@@ -7,8 +7,8 @@ const Register = () => {
   // const [name, setName] = useState('');
 
   const [member, setMember] = useState({
-    email: 'ashleylai58@gmail.com',
-    name: 'ashley',
+    email: 'test@gmail.com',
+    name: 'Testname',
     password: 'testtest',
     confirmPassword: 'testtest',
     photo: '',
