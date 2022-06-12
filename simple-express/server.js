@@ -13,22 +13,6 @@ app.use(cors());
 require('dotenv').config();
 let pool = require('./utils/db');
 
-// 這裡不會像爬蟲那樣，只建立一個連線 (mysql.createConnection)
-// 但是，也不會幫每一個 request 都分別建立連線
-// ----> connection pool
-// 資料庫連接工具
-// let pool = mysql
-//   .createPool({
-//     host: process.env.DB_HOST,
-//     port: process.env.DB_PORT,
-//     user: process.env.DB_USER,
-//     password: process.env.DB_PASSWORD,
-//     database: process.env.DB_NAME,
-//     // 為了 pool 新增的參數
-//     connectionLimit: 10,
-//     dateStrings: true,
-//   })
-//   .promise();
 // client - server
 // client send request -------> server
 //                     <------- response
@@ -50,11 +34,11 @@ app.set('views', path.join(__dirname, 'views'));
 // npm i pug
 app.set('view engine', 'pug');
 
-// express.urlencoded 要讓 express 認得 body 裡面的資料
+// express.urlencoded 要讓 express 認得 req 裡 body 裡面的資料
 // extended: false --> querystring
 // extended: true --> qs
 app.use(express.urlencoded({ extended: true }));
-// 要讓 express 認得 req 裡的 json
+// 要讓 express 認得 req 裡 json
 app.use(express.json());
 
 // express 處理靜態資料
@@ -63,8 +47,8 @@ app.use(express.json());
 // 方法1: 不要指定網址
 app.use(express.static(path.join(__dirname, 'assets')));
 // http://localhost:3001/images/test1.jpg
-// 方法2: 指定網址 aaa
-app.use('/aaa', express.static(path.join(__dirname, 'public')));
+// 方法2: 指定網址 public
+app.use('/public', express.static(path.join(__dirname, 'public')));
 // http://localhost:3001/aaa/images/callback-hell.png
 
 // 一般中間件
@@ -119,11 +103,11 @@ app.get('/ssr', (req, res, next) => {
   });
 });
 
-const StockRouter = require('./routers/stockRouters');
+const StockRouter = require('./routers/stockRouter');
 app.use('/api/stocks', StockRouter);
 
-const AuthRouter = require('./routers/authRouters');
-app.use('/api/stocks', AuthRouter);
+const AuthRouter = require('./routers/authRouter');
+app.use('/api/auth', AuthRouter);
 
 // 這個中間件在所有路由的後面
 // 會到這裡，表示前面所有的路由中間件都沒有比到符合的網址
